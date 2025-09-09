@@ -14,13 +14,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="PEAKModding.PEAKLib.Core" Version="1.5.*" Private="False" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="PEAKModding.PEAKLib.Items" Version="1.5.*" Private="False" />
-	</ItemGroup>
-	
-	<ItemGroup>
 		<PackageReference Include="PEAKModding.PEAKLib.Stats" Version="1.2.*" Private="False" />
 	</ItemGroup>
 	
