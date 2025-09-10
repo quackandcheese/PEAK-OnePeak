@@ -40,63 +40,26 @@ namespace OnePeak.Patches
                     itemBackpackVisuals.RemoveVisuals();
                 }
 
-                Bodypart elbow = interactor.GetBodypart(BodypartType.Elbow_R);
-
-                Vector3 itemPosition = __instance.transform.position;
-                Vector3 startStretchPos = elbow.transform.position;
-
-                SetJointMotion(elbow.joint, ConfigurableJointMotion.Free);
-
+                // turn off item physics
                 __instance.rig.isKinematic = true;
                 // TODO: add config for enabling self-collision
                 __instance.rig.excludeLayers = LayerMask.GetMask("Character");
 
-                float distanceDivisor = 12f;
-                float extendDuration = distance / distanceDivisor;
-
-                Tweener tween = elbow.transform.DOMove(itemPosition, extendDuration);
-                tween.OnComplete(() => OnStretchOutComplete(__instance, interactor, startStretchPos, extendDuration));
-
-                var sfxSettings = new SFX_Settings();
-                sfxSettings.pitch = GumGumFruit.Instance.gumGumStretchSFX.clips[0].length / extendDuration;
-                sfxSettings.volume = GumGumFruit.Instance.gumGumStretchSFX.settings.volume;
-                sfxSettings.pitch_Variation = 0f;
-                SFX_Player.instance.PlaySFX(GumGumFruit.Instance.gumGumStretchSFX, interactor.Center, null, sfxSettings, 1f, false);
+                // Stretch arm out!
+                Vector3 itemPosition = __instance.transform.position;
+                GumGumFruit.StretchArmTo(interactor, itemPosition, (returnPos, pullBackJumpHeight, pullBackDuration) =>
+                {
+                    __instance.transform.DOJump(returnPos, pullBackJumpHeight, 1, pullBackDuration);
+                }, 
+                () =>
+                {
+                    __instance.gameObject.SetActive(false);
+                    __instance.view.RPC("RequestPickup", RpcTarget.MasterClient, new object[] { interactor.GetComponent<PhotonView>() });
+                });
 
                 return false;
             }
             return true;
-        }
-
-        private static void OnStretchOutComplete(Item __instance, Character interactor, Vector3 startStretchPos, float extendDuration)
-        {
-            Bodypart elbow = interactor.GetBodypart(BodypartType.Elbow_R);
-
-            Vector3 returnPos = interactor.refs.items.GetItemHoldPos(__instance);
-
-            float pullBackJumpHeight = 0.3f;
-            float pullBackDuration = 0.5f;
-            __instance.transform.DOJump(returnPos, pullBackJumpHeight, 1, pullBackDuration);
-            elbow.transform.DOJump(returnPos, pullBackJumpHeight, 1, pullBackDuration).OnComplete(() => OnPullInComplete(__instance, interactor));
-
-            SFX_Player.instance.PlaySFX(GumGumFruit.Instance.snapBackSFX, interactor.Center, null, null, 1f, false);
-        }
-
-        private static void OnPullInComplete(Item __instance, Character interactor)
-        {
-            Bodypart elbow = interactor.GetBodypart(BodypartType.Elbow_R);
-
-            SetJointMotion(elbow.joint, ConfigurableJointMotion.Locked);
-
-            __instance.gameObject.SetActive(false);
-            __instance.view.RPC("RequestPickup", RpcTarget.MasterClient, new object[] { interactor.GetComponent<PhotonView>() });
-        }
-
-        private static void SetJointMotion(ConfigurableJoint joint, ConfigurableJointMotion motion)
-        {
-            joint.xMotion = motion;
-            joint.yMotion = motion;
-            joint.zMotion = motion;
         }
     }
 }
