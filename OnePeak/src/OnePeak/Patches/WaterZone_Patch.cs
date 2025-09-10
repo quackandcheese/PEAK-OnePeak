@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using OnePeak.DevilFruits;
 using Peak.Afflictions;
 using System;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ public class WaterZone_Patch
         {
             return;
         }
-        if (__instance.characterInsideBounds && Character.observedCharacter == Character.localCharacter && Character.localCharacter.refs.afflictions.GetCurrentStatus(Plugin.GumGumStatus) > 0.0)
+        if (__instance.characterInsideBounds && Character.observedCharacter == Character.localCharacter && GumGumFruit.IsOwnedBy(Character.localCharacter))
         {
             float drowsinessPerSecond = 0.05f;
             Character.localCharacter.refs.afflictions.AddStatus(CharacterAfflictions.STATUSTYPE.Drowsy, drowsinessPerSecond * Time.deltaTime, false);

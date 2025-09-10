@@ -6,6 +6,12 @@ using PEAKLib.Stats;
 using PEAKLib.Items;
 using MonoDetour;
 using HarmonyLib;
+using System.Collections.Generic;
+using System.Reflection;
+using System;
+using Zorro.Core.CLI;
+using Zorro.Core;
+using OnePeak.DevilFruits;
 
 namespace OnePeak;
 
@@ -26,9 +32,8 @@ public partial class Plugin : BaseUnityPlugin
     public static Plugin Instance { get; private set; } = null!;
     public static ModDefinition Definition { get; set; } = null!;
     internal static ManualLogSource Log { get; private set; } = null!;
+    internal static PeakBundle Bundle { get; private set; } = null!;
     internal static Harmony? Harmony { get; set; }
-
-    internal static CharacterAfflictions.STATUSTYPE GumGumStatus;
 
     // Config
     internal static float GumGumInteractDistance { get; set; }
@@ -40,24 +45,29 @@ public partial class Plugin : BaseUnityPlugin
         Definition = ModDefinition.GetOrCreate(Info.Metadata);
 
         InitConfig();
+        Patch();
 
         this.LoadBundleWithName(
             "onepeak.peakbundle",
-            statusBundle =>
+            bundle =>
             {
-                InitGumGumStatus(statusBundle);
-                InitGumGumFruit(statusBundle);
+                Bundle = bundle;
+                InitDevilFruits();
             }
         );
 
-        Patch();
 
         Log.LogInfo($"Plugin {Name} is loaded!");
     }
 
+    private void InitDevilFruits()
+    {
+        new GumGumFruit();
+    }
+
     private void InitConfig()
     {
-        GumGumInteractDistance = Config.Bind("General", "Gum-Gum Interact Distance", 25f, "How far away you can interact with items from when you've eaten the Gum-Gum Fruit.").Value;
+        GumGumInteractDistance = Config.Bind("General", "Gum-Gum Interact Distance", 8f, "How far away you can interact with items from when you've eaten the Gum-Gum Fruit.").Value;
     }
     internal static void Patch()
     {
@@ -68,52 +78,5 @@ public partial class Plugin : BaseUnityPlugin
         Harmony.PatchAll();
 
         Log.LogDebug("Finished patching!");
-    }
-
-    private void InitGumGumFruit(PeakBundle bundle)
-    {
-        var gumGumFruitPrefab = bundle.LoadAsset<GameObject>("GumGum Fruit.prefab");
-        // attach behavior
-        var action = gumGumFruitPrefab.AddComponent<Action_GumGum>();
-        action.OnCastFinished = true;
-
-        //bundle.Mod.RegisterContent();
-        new ItemContent(gumGumFruitPrefab.GetComponent<Item>()).Register(Definition);
-    }
-
-    private void InitGumGumStatus(PeakBundle bundle)
-    {
-        var gumGumTex = bundle.LoadAsset<Texture2D>("IC_GumGum");
-        Status gumGumStatus = new Status()
-        {
-            Name = "Gum-Gum",
-            Color = new Color(0.462f, 0.424f, 0.729f),
-            MaxAmount = 0.1f,
-            AllowClear = false,
-
-            // these are ignored because we use Update
-            ReductionCooldown = 1f,
-            ReductionPerSecond = 0f,
-
-            Icon = Sprite.Create(
-                gumGumTex,
-                new Rect(0, 0, gumGumTex.width, gumGumTex.height),
-                new Vector2(0.5f, 0.5f)
-            ),
-
-            Update = OnUpdateGumGumStatus,
-        };
-        new StatusContent(gumGumStatus).Register(Definition);
-        GumGumStatus = gumGumStatus.Type;
-    }
-
-    private void OnUpdateGumGumStatus(CharacterAfflictions self, Status status)
-    {
-        if (self.GetCurrentStatus(GumGumStatus) > 0.0)
-        {
-            Interaction.instance.distance = 6f;
-            self.character.refs.movement.jumpGravity = 45f;
-            self.character.refs.movement.jumpImpulse = 750f;
-        }
     }
 }

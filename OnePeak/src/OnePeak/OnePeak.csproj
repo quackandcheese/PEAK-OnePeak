@@ -17,6 +17,11 @@
 		<PackageReference Include="PEAKModding.PEAKLib.Items" Version="1.5.*" Private="False" />
 		<PackageReference Include="PEAKModding.PEAKLib.Stats" Version="1.2.*" Private="False" />
 	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Folder Include="Hooks\" />
+	</ItemGroup>
 	
   <!--
   How to include thunderstore mods as dependencies via nuget

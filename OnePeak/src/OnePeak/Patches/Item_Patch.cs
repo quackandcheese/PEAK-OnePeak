@@ -1,5 +1,6 @@
 ﻿using DG.Tweening;
 using HarmonyLib;
+using OnePeak.DevilFruits;
 using Photon.Pun;
 using Unity.Burst.Intrinsics;
 using UnityEngine;
@@ -14,7 +15,7 @@ namespace OnePeak.Patches
         [HarmonyPatch(nameof(Item.Interact))]
         static bool Interact_Prefix(Item __instance, Character interactor)
         {
-            if (interactor.refs.afflictions.GetCurrentStatus(Plugin.GumGumStatus) > 0.0)
+            if (GumGumFruit.IsOwnedBy(interactor))
             {
                 if (!interactor.player.HasEmptySlot(__instance.itemID))
                 {

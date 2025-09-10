@@ -1,10 +1,6 @@
 ﻿using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using OnePeak.DevilFruits;
 using UnityEngine;
-using UnityEngine.TextCore.Text;
-using static Zorro.ControllerSupport.Rumble.RumbleClip;
 
 namespace OnePeak.Patches
 {
@@ -16,7 +12,7 @@ namespace OnePeak.Patches
         static bool Land_Prefix(ref CharacterMovement __instance, ref CharacterMovement.PlayerGroundSample bestSample)
         {
 
-            if (__instance.character.refs.afflictions.GetCurrentStatus(Plugin.GumGumStatus) > 0.0)
+            if (GumGumFruit.IsOwnedBy(__instance.character))
             {
                 if (__instance.character.data.sinceGrounded > 0.5f)
                 {
