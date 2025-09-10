@@ -57,7 +57,7 @@ public partial class Plugin : BaseUnityPlugin
 
     private void InitConfig()
     {
-        GumGumInteractDistance = Config.Bind("General", "Gum-Gum Interact Distance", 20f, "How far away you can interact with items from when you've eaten the Gum-Gum Fruit.").Value;
+        GumGumInteractDistance = Config.Bind("General", "Gum-Gum Interact Distance", 25f, "How far away you can interact with items from when you've eaten the Gum-Gum Fruit.").Value;
     }
     internal static void Patch()
     {
