@@ -12,6 +12,8 @@ public class GumGumFruit : DevilFruit<GumGumFruit>
     public override string StatusName => "Gum-Gum";
     public override Texture2D StatusTexture => Plugin.Bundle.LoadAsset<Texture2D>("IC_GumGum");
     public override Color StatusColor => new Color(0.462f, 0.424f, 0.729f);
+    public SFX_Instance gumGumStretchSFX => Plugin.Bundle.LoadAsset<SFX_Instance>("SFXI GumGum Stretch");
+    public SFX_Instance snapBackSFX => Plugin.Bundle.LoadAsset<SFX_Instance>("SFXI GumGum Snap Back");
 
     protected override void OnUpdateStatus(CharacterAfflictions self, Status status)
     {

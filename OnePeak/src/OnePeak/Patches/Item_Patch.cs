@@ -51,10 +51,18 @@ namespace OnePeak.Patches
                 // TODO: add config for enabling self-collision
                 __instance.rig.excludeLayers = LayerMask.GetMask("Character");
 
-                float distanceDivisor = 24f;
+                float distanceDivisor = 12f;
                 float extendDuration = distance / distanceDivisor;
+
                 Tweener tween = elbow.transform.DOMove(itemPosition, extendDuration);
                 tween.OnComplete(() => OnStretchOutComplete(__instance, interactor, startStretchPos, extendDuration));
+
+                var sfxSettings = new SFX_Settings();
+                sfxSettings.pitch = GumGumFruit.Instance.gumGumStretchSFX.clips[0].length / extendDuration;
+                sfxSettings.volume = GumGumFruit.Instance.gumGumStretchSFX.settings.volume;
+                sfxSettings.pitch_Variation = 0f;
+                SFX_Player.instance.PlaySFX(GumGumFruit.Instance.gumGumStretchSFX, interactor.Center, null, sfxSettings, 1f, false);
+
                 return false;
             }
             return true;
@@ -67,9 +75,11 @@ namespace OnePeak.Patches
             Vector3 returnPos = interactor.refs.items.GetItemHoldPos(__instance);
 
             float pullBackJumpHeight = 0.3f;
-            float pullDuration = extendDuration * 0.75f;
-            __instance.transform.DOJump(returnPos, pullBackJumpHeight, 1, pullDuration);
-            elbow.transform.DOJump(returnPos, pullBackJumpHeight, 1, pullDuration).OnComplete(() => OnPullInComplete(__instance, interactor));
+            float pullBackDuration = 0.5f;
+            __instance.transform.DOJump(returnPos, pullBackJumpHeight, 1, pullBackDuration);
+            elbow.transform.DOJump(returnPos, pullBackJumpHeight, 1, pullBackDuration).OnComplete(() => OnPullInComplete(__instance, interactor));
+
+            SFX_Player.instance.PlaySFX(GumGumFruit.Instance.snapBackSFX, interactor.Center, null, null, 1f, false);
         }
 
         private static void OnPullInComplete(Item __instance, Character interactor)
