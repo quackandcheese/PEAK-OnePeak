@@ -6,6 +6,15 @@ using UnityEngine;
 
 namespace OnePeak.DevilFruits;
 
+// IDEAS
+
+// Increased grab range for pulling teammates
+// Increased grab range for grabbing onto wall
+// ✔️ When you fall, instead of taking fall damage you bounce uncontrollably
+// ✔️ Increased interaction range
+// ✔️ Increased jump height
+// ✔️ When in water, you slowly get the drowsy affliction
+// ✔️ add SFX for rubber stretching! RIP straight from the anime?
 public class GumGumFruit : DevilFruit<GumGumFruit>
 {
     public override GameObject Prefab => Plugin.Bundle.LoadAsset<GameObject>("GumGum Fruit.prefab");
@@ -20,6 +29,7 @@ public class GumGumFruit : DevilFruit<GumGumFruit>
         Interaction.instance.distance = Plugin.GumGumInteractDistance;
         self.character.refs.movement.jumpGravity = 45f;
         self.character.refs.movement.jumpImpulse = 750f;
+        Plugin.Instance.GrabFriendDistance = 8f;
     }
 
     #region PATCHES

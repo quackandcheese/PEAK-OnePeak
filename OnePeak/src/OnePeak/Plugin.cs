@@ -15,15 +15,6 @@ using OnePeak.DevilFruits;
 
 namespace OnePeak;
 
-// IDEAS
-
-// When you fall, instead of taking fall damage you bounce uncontrollably
-// Increased interaction range
-// Increased grab range for pulling teammates
-// Increased jump height
-// When in water, you slowly get the drowsy affliction
-// TODO: add SFX for rubber stretching! RIP straight from the anime?
-
 [BepInAutoPlugin]
 [BepInDependency("com.github.PEAKModding.PEAKLib.Core", BepInDependency.DependencyFlags.HardDependency)]
 [BepInDependency("com.github.PEAKModding.PEAKLib.Items", BepInDependency.DependencyFlags.HardDependency)]
@@ -36,6 +27,8 @@ public partial class Plugin : BaseUnityPlugin
     internal static PeakBundle Bundle { get; private set; } = null!;
     internal static Harmony? Harmony { get; set; }
 
+    public float GrabFriendDistance { get; set; } = 4f;
+
     // Config
     internal static float GumGumInteractDistance { get; set; }
 
@@ -46,6 +39,7 @@ public partial class Plugin : BaseUnityPlugin
         Definition = ModDefinition.GetOrCreate(Info.Metadata);
 
         InitConfig();
+        MonoDetourManager.InvokeHookInitializers(typeof(Plugin).Assembly);
         Patch();
 
         this.LoadBundleWithName(
