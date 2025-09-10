@@ -22,6 +22,7 @@ namespace OnePeak;
 // Increased grab range for pulling teammates
 // Increased jump height
 // When in water, you slowly get the drowsy affliction
+// TODO: add SFX for rubber stretching! RIP straight from the anime?
 
 [BepInAutoPlugin]
 [BepInDependency("com.github.PEAKModding.PEAKLib.Core", BepInDependency.DependencyFlags.HardDependency)]
