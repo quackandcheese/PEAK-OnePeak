@@ -26,6 +26,7 @@ public class GumGumFruit : DevilFruit<GumGumFruit>
     public override Color StatusColor => new Color(0.462f, 0.424f, 0.729f);
     public SFX_Instance gumGumStretchSFX => Plugin.Bundle.LoadAsset<SFX_Instance>("SFXI GumGum Stretch");
     public SFX_Instance snapBackSFX => Plugin.Bundle.LoadAsset<SFX_Instance>("SFXI GumGum Snap Back");
+    public static Tweener armTweener = null!;
 
     protected override void OnUpdateStatus(CharacterAfflictions self, Status status)
     {
@@ -38,21 +39,22 @@ public class GumGumFruit : DevilFruit<GumGumFruit>
     #region STRETCH ARM
     public static void StretchArmTo(Character interactor, Vector3 targetPosition, Action<Vector3, float, float> onExtendComplete = null!, Action onPullBackComplete = null!)
     {
+        if (!IsOwnedBy(interactor) || (armTweener != null && armTweener.active)) return;
+
         Bodypart elbow = interactor.GetBodypart(BodypartType.Elbow_R);
-        Vector3 startStretchPos = elbow.transform.position;
 
         // set joint motion to free so it can be moved around without pulling the body
         SetJointMotion(elbow.joint, ConfigurableJointMotion.Free);
 
         float distance = Vector3.Distance(targetPosition, elbow.transform.position);
-        float distanceDivisor = 12f;
+        float distanceDivisor = 12f; // arbitrary number to make the stretch speed reasonable
         float extendDuration = distance / distanceDivisor;
 
         // stretch hand to target position
-        Tweener tween = elbow.transform.DOMove(targetPosition, extendDuration);
-        tween.OnComplete(() =>
+        armTweener = elbow.transform.DOMove(targetPosition, extendDuration);
+        armTweener.OnComplete(() =>
         {
-            OnStretchOutComplete(interactor, startStretchPos, extendDuration, onExtendComplete, onPullBackComplete);
+            OnStretchOutComplete(interactor, extendDuration, onExtendComplete, onPullBackComplete);
         });
 
         // play stretch sound effect
@@ -63,7 +65,7 @@ public class GumGumFruit : DevilFruit<GumGumFruit>
         SFX_Player.instance.PlaySFX(Instance.gumGumStretchSFX, interactor.Center, null, sfxSettings, 1f, false);
     }
 
-    private static void OnStretchOutComplete(Character interactor, Vector3 startStretchPos, float extendDuration, Action<Vector3, float, float> onExtendComplete = null!, Action onPullBackComplete = null!)
+    private static void OnStretchOutComplete(Character interactor, float extendDuration, Action<Vector3, float, float> onExtendComplete = null!, Action onPullBackComplete = null!)
     {
         Bodypart elbow = interactor.GetBodypart(BodypartType.Elbow_R);
 

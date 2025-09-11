@@ -1,4 +1,6 @@
-﻿using MonoDetour;
+﻿// WIP
+
+/*using MonoDetour;
 using pworld.Scripts;
 using System;
 using System.Collections.Generic;
@@ -10,6 +12,7 @@ using MonoMod.Cil;
 using UnityEngine;
 using Mono.Cecil.Cil;
 using HarmonyLib;
+using OnePeak.DevilFruits;
 
 namespace OnePeak.Hooks;
 
@@ -27,7 +30,7 @@ static class GameHandlerHooks
     {
         ILWeaver weaver = new(info);
 
-        // Change the maximum grab distance to the value set in the config
+        // Change the maximum grab distance based on property GrabFriendDistance in Plugin
 
         weaver
             .MatchMultipleRelaxed(
@@ -50,6 +53,28 @@ static class GameHandlerHooks
             )
             .ThrowIfFailure();
 
+        // After the player successfully grabs another player, call GumGumFruit.StretchArmTo to stretch the arm towards the grabbed player
+        // TODO: add a check if character.data.isReaching is false so it only runs once
+        weaver
+            .MatchMultipleRelaxed(
+                onMatch: matchWeaver =>
+                {
+                    matchWeaver.InsertAfterCurrent(
+                        matchWeaver.Create(OpCodes.Ldarg_0), // player that is grabbing
+                        matchWeaver.Create(OpCodes.Ldfld, AccessTools.DeclaredField(typeof(CharacterGrabbing), nameof(CharacterGrabbing.character))),
+                        matchWeaver.Create(OpCodes.Ldloc_1), // player that is being grabbed
+                        matchWeaver.Create(OpCodes.Callvirt, AccessTools.DeclaredPropertyGetter(typeof(Character), nameof(Character.Center))), // player that is being grabbed
+                        matchWeaver.Create(OpCodes.Ldnull),
+                        matchWeaver.Create(OpCodes.Ldnull),
+                        matchWeaver.Create(OpCodes.Call, AccessTools.DeclaredMethod(typeof(GumGumFruit), nameof(GumGumFruit.StretchArmTo)))
+                    );
+                },
+                x => x.MatchCallvirt(AccessTools.DeclaredMethod(typeof(Character), nameof(Character.LimitFalling))),
+                x => x.MatchLdsfld(AccessTools.DeclaredField(typeof(GUIManager), nameof(GUIManager.instance))),
+                x => x.MatchCallvirt(AccessTools.DeclaredMethod(typeof(GUIManager), nameof(GUIManager.Grasp))) && weaver.SetCurrentTo(x)
+            )
+            .ThrowIfFailure();
+
         Plugin.Log.LogInfo(info.ToString());
     }
-}
+}*/
