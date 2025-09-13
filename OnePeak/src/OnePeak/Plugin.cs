@@ -28,6 +28,7 @@ public partial class Plugin : BaseUnityPlugin
     internal static Harmony? Harmony { get; set; }
 
     public float GrabFriendDistance { get; set; } = 4f;
+    public float GrabWallDistanceMultiplier { get; set; } = 1.25f;
 
     // Config
     internal static float GumGumInteractDistance { get; set; }

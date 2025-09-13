@@ -47,7 +47,7 @@ namespace OnePeak.Patches
 
                 // Stretch arm out!
                 Vector3 itemPosition = __instance.transform.position;
-                GumGumFruit.StretchArmTo(interactor, itemPosition, (returnPos, pullBackJumpHeight, pullBackDuration) =>
+                GumGumFruit.StretchLimbTo(interactor, itemPosition, BodypartType.Elbow_R, true, (returnPos, pullBackJumpHeight, pullBackDuration) =>
                 {
                     __instance.transform.DOJump(returnPos, pullBackJumpHeight, 1, pullBackDuration);
                 }, 

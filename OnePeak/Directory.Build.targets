@@ -11,7 +11,7 @@
       https://nuget.windows10ce.com/nuget/v3/index.json
     </RestoreAdditionalProjectSources>
   </PropertyGroup>
-
+	
   <!-- Modding dependencies -->
   <ItemGroup>
     <PackageReference Include="BepInEx.Core" Version="5.4.21" />

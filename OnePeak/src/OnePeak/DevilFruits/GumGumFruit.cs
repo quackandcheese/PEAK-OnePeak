@@ -10,14 +10,17 @@ namespace OnePeak.DevilFruits;
 
 // IDEAS
 
-// Increased grab range for pulling teammates
-// Increased grab range for grabbing onto wall
-// Add networking for stretchy arm
-// ✔️ When you fall, instead of taking fall damage you bounce uncontrollably
-// ✔️ Increased interaction range
-// ✔️ Increased jump height
-// ✔️ When in water, you slowly get the drowsy affliction
-// ✔️ add SFX for rubber stretching! RIP straight from the anime?
+// ☐ Increased grab range for pulling teammates
+// ☐ Increased grab range for grabbing onto wall
+// ➢ ☐ Change line 414 in CharacterClimbing to multiply by a config value if you have the gumgum fruit
+// ➢ ☐ Postfix patch CharacterClimbing.StartClimbRpc to stretch arm to character.data.climbPos
+// ☐ Add networking for stretchy arm
+// ☑ When you fall, instead of taking fall damage you bounce uncontrollably
+// ☑ Increased interaction range
+// ☑ Increased jump height
+// ☑ When in water, you slowly get the drowsy affliction
+// ☑ add SFX for rubber stretching! RIP straight from the anime?
+
 public class GumGumFruit : DevilFruit<GumGumFruit>
 {
     public override GameObject Prefab => Plugin.Bundle.LoadAsset<GameObject>("GumGum Fruit.prefab");
@@ -26,7 +29,7 @@ public class GumGumFruit : DevilFruit<GumGumFruit>
     public override Color StatusColor => new Color(0.462f, 0.424f, 0.729f);
     public SFX_Instance gumGumStretchSFX => Plugin.Bundle.LoadAsset<SFX_Instance>("SFXI GumGum Stretch");
     public SFX_Instance snapBackSFX => Plugin.Bundle.LoadAsset<SFX_Instance>("SFXI GumGum Snap Back");
-    public static Tweener armTweener = null!;
+    public static bool pullingToClimb = false;
 
     protected override void OnUpdateStatus(CharacterAfflictions self, Status status)
     {
@@ -34,27 +37,66 @@ public class GumGumFruit : DevilFruit<GumGumFruit>
         self.character.refs.movement.jumpGravity = 45f;
         self.character.refs.movement.jumpImpulse = 750f;
         Plugin.Instance.GrabFriendDistance = 8f;
+        Plugin.Instance.GrabWallDistanceMultiplier = 5f;
+    }
+
+    protected override void InitHooks()
+    {
+        On.CharacterClimbing.StartClimbRpc += CharacterClimbing_StartClimbRpc;
+        On.CharacterClimbing.StopClimbingRpc += CharacterClimbing_StopClimbingRpc;
+    }
+
+    private void CharacterClimbing_StopClimbingRpc(On.CharacterClimbing.orig_StopClimbingRpc orig, CharacterClimbing self, float setFall)
+    {
+        if (IsOwnedBy(self.character) && pullingToClimb)
+            return;
+        orig(self, setFall);
+    }
+
+    private void CharacterClimbing_StartClimbRpc(On.CharacterClimbing.orig_StartClimbRpc orig, CharacterClimbing self, Vector3 climbPos, Vector3 climbNormal)
+    {
+        Vector3 cameraPos = MainCamera.instance.transform.position;
+        float defaultClimbDistance = 2.5f;
+        if (IsOwnedBy(self.character) && Vector3.Distance(cameraPos, climbPos) > defaultClimbDistance)
+        {
+            if (!pullingToClimb)
+            {
+                pullingToClimb = true;
+                Plugin.Log.LogInfo("StartClimbRpc called");
+                StretchLimbTo(self.character, climbPos, BodypartType.Elbow_R, false);
+                StretchLimbTo(self.character, climbPos, BodypartType.Elbow_L, false, null, () =>
+                {
+                    Plugin.Log.LogInfo("Stretch complete, calling original StartClimbRpc");
+                    pullingToClimb = false;
+                    orig(self, climbPos, climbNormal);
+                });
+            }
+
+            return;
+        }
+
+        orig(self, climbPos, climbNormal);
     }
 
     #region STRETCH ARM
-    public static void StretchArmTo(Character interactor, Vector3 targetPosition, Action<Vector3, float, float> onExtendComplete = null!, Action onPullBackComplete = null!)
+    public static void StretchLimbTo(Character interactor, Vector3 targetPosition, BodypartType limbType, bool tweenPullBack = true, Action<Vector3, float, float> onExtendComplete = null!, Action onPullBackComplete = null!)
     {
-        if (!IsOwnedBy(interactor) || (armTweener != null && armTweener.active)) return;
+        if (!IsOwnedBy(interactor)) return;
 
-        Bodypart elbow = interactor.GetBodypart(BodypartType.Elbow_R);
+        Bodypart limb = interactor.GetBodypart(limbType);
 
         // set joint motion to free so it can be moved around without pulling the body
-        SetJointMotion(elbow.joint, ConfigurableJointMotion.Free);
+        SetJointMotion(limb.joint, ConfigurableJointMotion.Free);
 
-        float distance = Vector3.Distance(targetPosition, elbow.transform.position);
+        float distance = Vector3.Distance(targetPosition, limb.transform.position);
         float distanceDivisor = 12f; // arbitrary number to make the stretch speed reasonable
         float extendDuration = distance / distanceDivisor;
 
         // stretch hand to target position
-        armTweener = elbow.transform.DOMove(targetPosition, extendDuration);
-        armTweener.OnComplete(() =>
+        var limbTweener = limb.transform.DOMove(targetPosition, extendDuration);
+        limbTweener.OnComplete(() =>
         {
-            OnStretchOutComplete(interactor, extendDuration, onExtendComplete, onPullBackComplete);
+            OnStretchOutComplete(interactor, limbType, extendDuration, tweenPullBack, onExtendComplete, onPullBackComplete);
         });
 
         // play stretch sound effect
@@ -65,9 +107,9 @@ public class GumGumFruit : DevilFruit<GumGumFruit>
         SFX_Player.instance.PlaySFX(Instance.gumGumStretchSFX, interactor.Center, null, sfxSettings, 1f, false);
     }
 
-    private static void OnStretchOutComplete(Character interactor, float extendDuration, Action<Vector3, float, float> onExtendComplete = null!, Action onPullBackComplete = null!)
+    private static void OnStretchOutComplete(Character interactor, BodypartType limbType, float extendDuration, bool tweenPullBack = true, Action<Vector3, float, float> onExtendComplete = null!, Action onPullBackComplete = null!)
     {
-        Bodypart elbow = interactor.GetBodypart(BodypartType.Elbow_R);
+        Bodypart limb = interactor.GetBodypart(limbType);
 
         Vector3 returnPos = interactor.refs.items.GetItemHoldPos(null);
 
@@ -76,21 +118,28 @@ public class GumGumFruit : DevilFruit<GumGumFruit>
 
         onExtendComplete?.Invoke(returnPos, pullBackJumpHeight, pullBackDuration);
 
-        elbow.transform.DOJump(returnPos, pullBackJumpHeight, 1, pullBackDuration).OnComplete(() =>
+        if (tweenPullBack)
         {
-            OnPullInComplete(interactor, onPullBackComplete);
-        });
+            limb.transform.DOJump(returnPos, pullBackJumpHeight, 1, pullBackDuration).OnComplete(() =>
+            {
+                OnPullInComplete(interactor, limbType, onPullBackComplete);
+            });
+        }
+        else
+        {
+            OnPullInComplete(interactor, limbType, onPullBackComplete);
+        }
 
         SFX_Player.instance.PlaySFX(GumGumFruit.Instance.snapBackSFX, interactor.Center, null, null, 1f, false);
     }
 
-    private static void OnPullInComplete(Character interactor, Action onPullBackComplete = null!)
+    private static void OnPullInComplete(Character interactor, BodypartType limbType, Action onPullBackComplete = null!)
     {
         onPullBackComplete?.Invoke();
 
-        Bodypart elbow = interactor.GetBodypart(BodypartType.Elbow_R);
+        Bodypart limb = interactor.GetBodypart(limbType);
 
-        SetJointMotion(elbow.joint, ConfigurableJointMotion.Locked);
+        SetJointMotion(limb.joint, ConfigurableJointMotion.Locked);
     }
 
     private static void SetJointMotion(ConfigurableJoint joint, ConfigurableJointMotion motion)

@@ -11,7 +11,15 @@
     <Version>0.1.0</Version>
   </PropertyGroup>
 
+	<PropertyGroup>
+		<MonoDetourHookGenNamespace>OnDetour</MonoDetourHookGenNamespace>
+	</PropertyGroup>
 
+	<ItemGroup>
+		<Reference Include="MMHOOK_Assembly-CSharp">
+			<HintPath>$(PeakPluginsDir)/MMHOOK/Managed/MMHOOK_Assembly-CSharp.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="PEAKModding.PEAKLib.Core" Version="1.5.*" Private="False" />
 		<PackageReference Include="PEAKModding.PEAKLib.Items" Version="1.5.*" Private="False" />

@@ -22,6 +22,7 @@ public abstract class DevilFruit<T> where T : DevilFruit<T>
         Instance = (T)this;
         InitStatus();
         InitItem();
+        InitHooks();
     }
 
     protected virtual void InitStatus()
@@ -55,6 +56,11 @@ public abstract class DevilFruit<T> where T : DevilFruit<T>
         action.devilFruitStatus = Status;
         action.OnCastFinished = true;
         new ItemContent(Prefab.GetComponent<Item>()).Register(Plugin.Definition);
+    }
+
+    protected virtual void InitHooks()
+    {
+
     }
 
     protected abstract void OnUpdateStatus(CharacterAfflictions self, Status status);

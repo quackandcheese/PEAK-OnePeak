@@ -1,4 +1,5 @@
 ﻿// WIP
+// turns out the Reach method is run on every client for every player, and the client BEING grabbed drags itself towards the grabber
 
 /*using MonoDetour;
 using pworld.Scripts;
@@ -53,7 +54,7 @@ static class GameHandlerHooks
             )
             .ThrowIfFailure();
 
-        // After the player successfully grabs another player, call GumGumFruit.StretchArmTo to stretch the arm towards the grabbed player
+        // After the player successfully grabs another player, call GumGumFruit.StretchLimbTo to stretch the arm towards the grabbed player
         // TODO: add a check if character.data.isReaching is false so it only runs once
         weaver
             .MatchMultipleRelaxed(
@@ -66,7 +67,7 @@ static class GameHandlerHooks
                         matchWeaver.Create(OpCodes.Callvirt, AccessTools.DeclaredPropertyGetter(typeof(Character), nameof(Character.Center))), // player that is being grabbed
                         matchWeaver.Create(OpCodes.Ldnull),
                         matchWeaver.Create(OpCodes.Ldnull),
-                        matchWeaver.Create(OpCodes.Call, AccessTools.DeclaredMethod(typeof(GumGumFruit), nameof(GumGumFruit.StretchArmTo)))
+                        matchWeaver.Create(OpCodes.Call, AccessTools.DeclaredMethod(typeof(GumGumFruit), nameof(GumGumFruit.StretchLimbTo)))
                     );
                 },
                 x => x.MatchCallvirt(AccessTools.DeclaredMethod(typeof(Character), nameof(Character.LimitFalling))),
