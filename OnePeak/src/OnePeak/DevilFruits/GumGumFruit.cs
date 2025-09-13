@@ -63,9 +63,19 @@ public class GumGumFruit : DevilFruit<GumGumFruit>
             {
                 pullingToClimb = true;
                 Plugin.Log.LogInfo("StartClimbRpc called");
-                StretchLimbTo(self.character, climbPos, BodypartType.Elbow_R, false);
-                StretchLimbTo(self.character, climbPos, BodypartType.Elbow_L, false, null, () =>
+
+                // Calculate a vector perpendicular to the climbNormal and up direction to get a "sideways" offset
+                Vector3 up = Vector3.up;
+                Vector3 side = Vector3.Cross(climbNormal, up).normalized * 0.15f;
+                Vector3 cameraToClimb = (MainCamera.instance.transform.position - climbPos).normalized * 0.2f; // Move slightly toward camera
+                Vector3 rightPos = climbPos + side + cameraToClimb;
+                Vector3 leftPos = climbPos - side + cameraToClimb;
+
+                StretchLimbTo(self.character, rightPos, BodypartType.Elbow_R, false);
+                StretchLimbTo(self.character, leftPos, BodypartType.Elbow_L, false, null, () =>
                 {
+                    self.character.data.sinceCanClimb = 0f;
+                    self.sinceLastClimbStarted = 0f;
                     Plugin.Log.LogInfo("Stretch complete, calling original StartClimbRpc");
                     pullingToClimb = false;
                     orig(self, climbPos, climbNormal);
@@ -87,6 +97,7 @@ public class GumGumFruit : DevilFruit<GumGumFruit>
 
         // set joint motion to free so it can be moved around without pulling the body
         SetJointMotion(limb.joint, ConfigurableJointMotion.Free);
+        limb.rig.isKinematic = true;
 
         float distance = Vector3.Distance(targetPosition, limb.transform.position);
         float distanceDivisor = 12f; // arbitrary number to make the stretch speed reasonable
@@ -135,11 +146,13 @@ public class GumGumFruit : DevilFruit<GumGumFruit>
 
     private static void OnPullInComplete(Character interactor, BodypartType limbType, Action onPullBackComplete = null!)
     {
-        onPullBackComplete?.Invoke();
 
         Bodypart limb = interactor.GetBodypart(limbType);
 
+        limb.rig.isKinematic = false;
         SetJointMotion(limb.joint, ConfigurableJointMotion.Locked);
+
+        onPullBackComplete?.Invoke();
     }
 
     private static void SetJointMotion(ConfigurableJoint joint, ConfigurableJointMotion motion)
