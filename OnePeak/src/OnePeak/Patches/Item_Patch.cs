@@ -1,6 +1,7 @@
 ﻿using DG.Tweening;
 using HarmonyLib;
 using OnePeak.DevilFruits;
+using OnePeak.Utilities;
 using Photon.Pun;
 using Unity.Burst.Intrinsics;
 using UnityEngine;
@@ -16,7 +17,7 @@ namespace OnePeak.Patches
         static bool Interact_Prefix(Item __instance, Character interactor)
         {
             float distance = Vector3.Distance(__instance.transform.position, interactor.Center);
-            if (distance > 2f && GumGumFruit.IsOwnedBy(interactor))
+            if (distance > 2f && interactor.HasEatenDevilFruit<GumGumFruit>())
             {
                 if (!interactor.player.HasEmptySlot(__instance.itemID))
                 {

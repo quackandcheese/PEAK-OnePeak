@@ -91,7 +91,7 @@ public class GumGumFruit : DevilFruit<GumGumFruit>
     #region STRETCH ARM
     public static void StretchLimbTo(Character interactor, Vector3 targetPosition, BodypartType limbType, bool tweenPullBack = true, Action<Vector3, float, float> onExtendComplete = null!, Action onPullBackComplete = null!)
     {
-        if (!IsOwnedBy(interactor)) return;
+        if (!Instance.IsOwnedBy(interactor)) return;
 
         Bodypart limb = interactor.GetBodypart(limbType);
 

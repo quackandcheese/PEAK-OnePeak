@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using OnePeak.DevilFruits;
+using OnePeak.Utilities;
 using UnityEngine;
 
 namespace OnePeak.Patches
@@ -12,7 +13,7 @@ namespace OnePeak.Patches
         static bool Land_Prefix(ref CharacterMovement __instance, ref CharacterMovement.PlayerGroundSample bestSample)
         {
 
-            if (GumGumFruit.IsOwnedBy(__instance.character))
+            if (__instance.character.HasEatenDevilFruit<GumGumFruit>())
             {
                 if (__instance.character.data.sinceGrounded > 0.5f)
                 {

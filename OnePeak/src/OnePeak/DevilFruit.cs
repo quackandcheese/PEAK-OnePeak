@@ -5,12 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using static Zorro.ControllerSupport.Rumble.RumbleClip;
 
 namespace OnePeak;
 
-public abstract class DevilFruit<T> where T : DevilFruit<T>
+public abstract class DevilFruit
 {
-    public static T Instance { get; private set; }
+    public static List<DevilFruit> AllFruits { get; } = new List<DevilFruit>();
     public CharacterAfflictions.STATUSTYPE Status { get; private set; }
     public abstract GameObject Prefab { get; }
     public abstract string StatusName { get; }
@@ -19,7 +20,7 @@ public abstract class DevilFruit<T> where T : DevilFruit<T>
 
     public DevilFruit()
     {
-        Instance = (T)this;
+        AllFruits.Add(this);
         InitStatus();
         InitItem();
         InitHooks();
@@ -65,8 +66,18 @@ public abstract class DevilFruit<T> where T : DevilFruit<T>
 
     protected abstract void OnUpdateStatus(CharacterAfflictions self, Status status);
 
-    public static bool IsOwnedBy(Character character)
+    public bool IsOwnedBy(Character character)
     {
-        return character.refs.afflictions.GetCurrentStatus(Instance.Status) > 0.0;
+        return character.refs.afflictions.GetCurrentStatus(Status) > 0.0;
+    }
+}
+
+public abstract class DevilFruit<T> : DevilFruit where T : DevilFruit<T>
+{
+    public static T Instance { get; private set; }
+
+    public DevilFruit() : base()
+    {
+        Instance = (T)this;
     }
 }
