@@ -12,6 +12,7 @@ using System;
 using Zorro.Core.CLI;
 using Zorro.Core;
 using OnePeak.DevilFruits;
+using MoreBadges;
 
 namespace OnePeak;
 
@@ -19,6 +20,8 @@ namespace OnePeak;
 [BepInDependency("com.github.PEAKModding.PEAKLib.Core", BepInDependency.DependencyFlags.HardDependency)]
 [BepInDependency("com.github.PEAKModding.PEAKLib.Items", BepInDependency.DependencyFlags.HardDependency)]
 [BepInDependency("com.github.PEAKModding.PEAKLib.Stats", BepInDependency.DependencyFlags.HardDependency)]
+[BepInDependency("MoreCustomizations", BepInDependency.DependencyFlags.HardDependency)]
+[BepInDependency("com.snosz.morebadges", BepInDependency.DependencyFlags.HardDependency)]
 public partial class Plugin : BaseUnityPlugin
 {
     public static Plugin Instance { get; private set; } = null!;
@@ -49,11 +52,28 @@ public partial class Plugin : BaseUnityPlugin
             {
                 Bundle = bundle;
                 InitDevilFruits();
+                InitBadges();
             }
         );
 
 
         Log.LogInfo($"Plugin {Name} is loaded!");
+    }
+
+    private void InitBadges()
+    {
+        // This adds a badge that will trigger only if the conditions are met during a single expedition.
+        MoreBadgesPlugin.CustomBadge strawHatBadge = new MoreBadgesPlugin.CustomBadge(
+            name: BadgeNames.StrawHatBadge,
+            displayName: "STRAW HAT BADGE",
+            description: "Reach the peak while having eaten the Gum-Gum Fruit.",
+            icon: Plugin.Bundle.LoadAsset<Texture2D>("IC_StrawHatBadge"), //256x256 Texture2D
+            progressRequired: 1, // How many times the condition needs to be met to unlock the badge. Defaults to 1
+            runBasedProgress: true // This determines if the badge progress is reset every expedition. Defaults to false,
+                                   //nameLocalizations: nameLocalizations // If you want to support more than just english, you can pass a list containing translated strings in the appropriate order
+                                   //descriptionLocalizations: descriptionLocalizations 
+            );
+        MoreBadgesPlugin.RegisterBadge(strawHatBadge, "-252561889_Hat_OnePeak_StrawHat");
     }
 
     private void InitDevilFruits()

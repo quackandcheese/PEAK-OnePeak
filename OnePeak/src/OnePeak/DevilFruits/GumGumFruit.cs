@@ -1,4 +1,5 @@
 ﻿using DG.Tweening;
+using MoreBadges;
 using PEAKLib.Stats;
 using Photon.Pun;
 using System;

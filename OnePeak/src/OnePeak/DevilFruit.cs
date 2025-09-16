@@ -17,6 +17,7 @@ public abstract class DevilFruit
     public abstract string StatusName { get; }
     public abstract Texture2D StatusTexture { get; }
     public abstract Color StatusColor { get; }
+    public virtual string BadgeName { get; }
 
     public DevilFruit()
     {
@@ -64,7 +65,11 @@ public abstract class DevilFruit
 
     }
 
-    protected abstract void OnUpdateStatus(CharacterAfflictions self, Status status);
+    protected virtual void OnUpdateStatus(CharacterAfflictions self, Status status)
+    {
+
+    }
+
 
     public bool IsOwnedBy(Character character)
     {

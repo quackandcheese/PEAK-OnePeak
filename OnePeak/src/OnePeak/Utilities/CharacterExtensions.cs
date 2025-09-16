@@ -19,4 +19,8 @@ public static class CharacterExtensions
     {
         return (character.refs.afflictions.GetCurrentStatus(DevilFruit<T>.Instance.Status) > 0.0);
     }
+    public static bool HasEatenDevilFruit(this Character character, DevilFruit fruit)
+    {
+        return (character.refs.afflictions.GetCurrentStatus(fruit.Status) > 0.0);
+    }
 }
